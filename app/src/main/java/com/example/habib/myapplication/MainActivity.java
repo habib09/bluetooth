@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 
 import android.widget.ArrayAdapter;
@@ -65,15 +66,14 @@ public class MainActivity extends Activity  {
         startActivityForResult(getVisible, 0);
     }
 
-
-    public void list(View v){
-        getDiscoverableDevices();
-
-        adapter = new  ArrayAdapter(this,android.R.layout.simple_list_item_1, list);
-
-
+    public void searchDevices(View view){
+        Log.d("bluetooth test", "search Devices method called");
+        list.clear();
+        adapter = new  ArrayAdapter(this,R.layout.row_item,R.id.device_name, list);
         adapter.setNotifyOnChange(true);
         lv.setAdapter(adapter);
+        bluetoothAdapter.cancelDiscovery();
+        bluetoothAdapter.startDiscovery();
     }
 
 
@@ -90,22 +90,22 @@ public class MainActivity extends Activity  {
         }
     }
 
-    public void getDiscoverableDevices(){
-        bluetoothAdapter.startDiscovery();
 
-    }
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            Log.d("bluetooth test", "BroadcastReceiver onReceive called");
             if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-                // Discovery has found a device. Get the BluetoothDevice
-                // object and its info from the Intent.
+
+                Toast.makeText(getApplicationContext(),"device found",Toast.LENGTH_SHORT).show();
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                if(device.getName() != null) {
+                    Toast.makeText(getApplicationContext(),"device name not null",Toast.LENGTH_SHORT).show();
+                    list.add(device.getName());
 
-                list.add(device.getName());
-
-                adapter.notifyDataSetChanged();
+                    adapter.notifyDataSetChanged();
+                }
 
             }
         }
@@ -114,7 +114,7 @@ public class MainActivity extends Activity  {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Don't forget to unregister the ACTION_FOUND receiver.
+
         unregisterReceiver(mReceiver);
     }
 
